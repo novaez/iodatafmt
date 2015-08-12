@@ -1,4 +1,4 @@
-all: test
+all: test readme
 
 format:
 	gofmt -w=true .

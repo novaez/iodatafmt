@@ -9,7 +9,7 @@
 
 ## func Load
 ``` go
-func Load(fn string) (map[string]interface{}, error)
+func Load(fn string, f DataFmt) (map[string]interface{}, error)
 ```
 Load a file with serialized data.
 
@@ -30,7 +30,7 @@ Unmarshal YAML/JSON/TOML serialized data.
 
 ## func Write
 ``` go
-func Write(fn string, d []byte) error
+func Write(fn string, f DataFmt, d []byte) error
 ```
 Write a file with serialized data.
 

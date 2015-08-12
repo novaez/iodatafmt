@@ -105,11 +105,7 @@ func FileFormat(fn string) (DataFmt, error) {
 }
 
 // Load a file with serialized data.
-func Load(fn string) (map[string]interface{}, error) {
-	if f, err := Format(fn); err != nil {
-		return nil, err
-	}
-
+func Load(fn string, f DataFmt) (map[string]interface{}, error) {
 	if _, err := os.Stat(fn); os.IsNotExist(err) {
 		return nil, errors.New("file doesn't exist")
 	}
@@ -126,11 +122,7 @@ func Load(fn string) (map[string]interface{}, error) {
 }
 
 // Write a file with serialized data.
-func Write(fn string, d []byte) error {
-	if f, err := Format(fn); err != nil {
-		return nil, err
-	}
-
+func Write(fn string, f DataFmt, d []byte) error {
 	if b, err := Marshal(d, f); err != nil {
 		return nil, err
 	}
