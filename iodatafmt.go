@@ -2,6 +2,7 @@ package iodatafmt
 
 import (
 	// Base packages.
+	"bytes"
 	"encoding/json"
 	"errors"
 	"io/ioutil"
@@ -22,6 +23,7 @@ const (
 	YAML DataFmt = iota
 	TOML
 	JSON
+	UNKNOWN
 )
 
 // Unmarshal YAML/JSON/TOML serialized data.
@@ -51,19 +53,21 @@ func Unmarshal(b []byte, f DataFmt) (map[string]interface{}, error) {
 // Marshal YAML/JSON/TOML serialized data.
 func Marshal(d map[string]interface{}, f DataFmt) ([]byte, error) {
 	switch f {
-	case "YAML":
-		if b, err := yaml.Marshal(&d); err != nil {
+	case YAML:
+		b, err := yaml.Marshal(&d)
+		if err != nil {
 			return nil, err
 		}
 		return b, nil
-	case "TOML":
+	case TOML:
 		b := new(bytes.Buffer)
-		if err := toml.NewEncoder(s).Encode(&b); err != nil {
+		if err := toml.NewEncoder(b).Encode(&d); err != nil {
 			return nil, err
 		}
 		return b.Bytes(), nil
-	case "JSON":
-		if b, err := json.MarshalIndent(&b, "", "    "); err != nil {
+	case JSON:
+		b, err := json.MarshalIndent(&d, "", "    ")
+		if err != nil {
 			return nil, err
 		}
 		return b, nil
@@ -82,7 +86,7 @@ func Format(s string) (DataFmt, error) {
 	case "JSON":
 		return JSON, nil
 	default:
-		return nil, errors.New("unsupported data format")
+		return UNKNOWN, errors.New("unsupported data format")
 	}
 }
 
@@ -100,7 +104,7 @@ func FileFormat(fn string) (DataFmt, error) {
 	case ".tml":
 		return TOML, nil
 	default:
-		return nil, errors.New("unsupported data format")
+		return UNKNOWN, errors.New("unsupported data format")
 	}
 }
 
@@ -110,11 +114,13 @@ func Load(fn string, f DataFmt) (map[string]interface{}, error) {
 		return nil, errors.New("file doesn't exist")
 	}
 
-	if b, err := ioutil.ReadFile(fn); err != nil {
+	b, err := ioutil.ReadFile(fn)
+	if err != nil {
 		return nil, err
 	}
 
-	if d, err := Unmarshal(b, f); err != nil {
+	d, err := Unmarshal(b, f)
+	if err != nil {
 		return nil, err
 	}
 
@@ -122,12 +128,14 @@ func Load(fn string, f DataFmt) (map[string]interface{}, error) {
 }
 
 // Write a file with serialized data.
-func Write(fn string, f DataFmt, d []byte) error {
-	if b, err := Marshal(d, f); err != nil {
-		return nil, err
+func Write(fn string, f DataFmt, d map[string]interface{}) error {
+	b, err := Marshal(d, f)
+	if err != nil {
+		return err
 	}
 
-	if w, err := os.Create(fn); err != nil {
+	w, err := os.Create(fn)
+	if err != nil {
 		return err
 	}
 

@@ -30,7 +30,7 @@ Unmarshal YAML/JSON/TOML serialized data.
 
 ## func Write
 ``` go
-func Write(fn string, f DataFmt, d []byte) error
+func Write(fn string, f DataFmt, d map[string]interface{}) error
 ```
 Write a file with serialized data.
 
@@ -49,6 +49,7 @@ const (
     YAML DataFmt = iota
     TOML
     JSON
+    UNKNOWN
 )
 ```
 Constants for data format.
