@@ -7,13 +7,6 @@
 
 
 
-## func Format
-``` go
-func Format(fn string) error
-```
-Format deduces file format based on extension.
-
-
 ## func Load
 ``` go
 func Load(fn string) (map[string]interface{}, error)
@@ -64,6 +57,20 @@ Constants for data format.
 
 
 
+
+
+### func FileFormat
+``` go
+func FileFormat(fn string) (DataFmt, error)
+```
+FileFormat returns DataFmt constant based on file extension.
+
+
+### func Format
+``` go
+func Format(s string) (DataFmt, error)
+```
+Format returns DataFmt constant based on a string.
 
 
 

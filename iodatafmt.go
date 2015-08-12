@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
 	// Third party packages.
 	"github.com/BurntSushi/toml"
@@ -71,22 +72,36 @@ func Marshal(d map[string]interface{}, f DataFmt) ([]byte, error) {
 	}
 }
 
-// Format deduces file format based on extension.
-func Format(fn string) error {
-	var f DataFmt
-
-	switch filepath.Ext(fn) {
-	case ".yaml":
-		f = YAML
-	case ".json":
-		f = JSON
-	case ".toml":
-		f = TOML
+// Format returns DataFmt constant based on a string.
+func Format(s string) (DataFmt, error) {
+	switch strings.ToUpper(s) {
+	case "YAML":
+		return YAML, nil
+	case "TOML":
+		return TOML, nil
+	case "JSON":
+		return JSON, nil
 	default:
 		return nil, errors.New("unsupported data format")
 	}
+}
 
-	return f
+// FileFormat returns DataFmt constant based on file extension.
+func FileFormat(fn string) (DataFmt, error) {
+	switch filepath.Ext(fn) {
+	case ".yaml":
+		return YAML, nil
+	case ".yml":
+		return YAML, nil
+	case ".json":
+		return JSON, nil
+	case ".toml":
+		return TOML, nil
+	case ".tml":
+		return TOML, nil
+	default:
+		return nil, errors.New("unsupported data format")
+	}
 }
 
 // Load a file with serialized data.
