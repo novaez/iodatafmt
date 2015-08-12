@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -128,7 +129,7 @@ func Load(fn string, f DataFmt) (map[string]interface{}, error) {
 }
 
 // Write a file with serialized data.
-func Write(fn string, f DataFmt, d map[string]interface{}) error {
+func Write(fn string, d map[string]interface{}, f DataFmt) error {
 	b, err := Marshal(d, f)
 	if err != nil {
 		return err
@@ -145,4 +146,25 @@ func Write(fn string, f DataFmt, d map[string]interface{}) error {
 
 	w.Close()
 	return nil
+}
+
+// Print serialized data.
+func Print(d map[string]interface{}, f DataFmt) error {
+	b, err := Marshal(d, f)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(string(b))
+	return nil
+}
+
+// Sprint return serialized data.
+func Sprint(d map[string]interface{}, f DataFmt) (string, error) {
+	b, err := Marshal(d, f)
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintln(string(b)), nil
 }
