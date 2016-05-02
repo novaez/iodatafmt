@@ -1,4 +1,4 @@
-// Copyright (c) 2015 Michael Persson
+// Copyright (c) 2015-2016 Michael Persson
 // Copyright (c) 2012–2015 Elasticsearch <http://www.elastic.co>
 //
 // Originally distributed as part of "beats" repository (https://github.com/elastic/beats).
@@ -18,12 +18,13 @@ import (
 
 // Unmarshal YAML to map[string]interface{} instead of map[interface{}]interface{}.
 func Unmarshal(in []byte, out interface{}) error {
+	var res interface{}
 
-	var res map[interface{}]interface{}
 	if err := yaml.Unmarshal(in, &res); err != nil {
 		return err
 	}
-	out = cleanupInterfaceMap(res)
+	*out.(*interface{}) = cleanupMapValue(res)
+
 	return nil
 }
 
