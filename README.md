@@ -1,6 +1,6 @@
 
 # iodatafmt
-    import "github.com/mickep76/iodatafmt"
+    import "github.com/novaez/iodatafmt"
 
 
 
