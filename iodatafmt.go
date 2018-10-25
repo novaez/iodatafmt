@@ -9,10 +9,12 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+    "sort"
+    "strconv"
 	"strings"
 
 	// Local packages.
-	yaml "github.com/mickep76/iodatafmt/yaml_mapstr"
+	yaml "github.com/novaez/iodatafmt/yaml_mapstr"
 
 	// Third party packages.
 	"github.com/BurntSushi/toml"
@@ -77,21 +79,24 @@ func UnmarshalPtr(ptr interface{}, b []byte, f DataFmt) error {
 
 // Marshal YAML/JSON/TOML serialized data.
 func Marshal(d interface{}, f DataFmt) ([]byte, error) {
+    // restore array from map if its keys are 0, 1, 2...
+    res := restoreArrayMapValue(d)
+
 	switch f {
 	case YAML:
-		b, err := yaml.Marshal(&d)
+		b, err := yaml.Marshal(&res)
 		if err != nil {
 			return nil, err
 		}
 		return b, nil
 	case TOML:
 		b := new(bytes.Buffer)
-		if err := toml.NewEncoder(b).Encode(&d); err != nil {
+		if err := toml.NewEncoder(b).Encode(&res); err != nil {
 			return nil, err
 		}
 		return b.Bytes(), nil
 	case JSON:
-		b, err := json.MarshalIndent(&d, "", "  ")
+		b, err := json.MarshalIndent(&res, "", "  ")
 		if err != nil {
 			return nil, err
 		}
@@ -209,4 +214,66 @@ func Sprint(d interface{}, f DataFmt) (string, error) {
 	}
 
 	return fmt.Sprintln(string(b)), nil
+}
+
+func willRestore(in map[string]interface{}) ([]string, bool) {
+    // zero length map shouldn't be restored
+    if (len(in) == 0) {
+        return nil, false
+    }
+
+    // Convert map to slice of keys.
+    keys := []string{}
+    for key, _ := range in {
+        keys = append(keys, key)
+    }
+
+    sort.Strings(keys)
+
+    for i, _ := range keys {
+        if (keys[i] != strconv.Itoa(i)) {
+            return nil, false
+        }
+    }
+
+    return keys, true
+}
+
+func restoreArrayInterfaceArray(in []interface{}) interface{} {
+    res := make([]interface{}, len(in))
+    for i, v := range in {
+        res[i] = restoreArrayMapValue(v)
+    }
+    return res
+}
+
+func restoreArrayInterfaceMap(in map[string]interface{}) interface{} {
+    res := make(map[string]interface{})
+    for k, v := range in {
+        res[fmt.Sprintf("%v", k)] = restoreArrayMapValue(v)
+    }
+
+    keys, b := willRestore(res)
+    if (b) {
+        var array []interface{}
+        for _, key := range keys {
+            array = append(array, res[key])
+        }
+        return array
+    }
+    return res
+}
+
+func restoreArrayMapValue(v interface{}) interface{} {
+    switch v := v.(type) {
+    case []interface{}:
+        return restoreArrayInterfaceArray(v)
+    case map[string]interface{}:
+        return restoreArrayInterfaceMap(v)
+    case string:
+        return v
+    default:
+        //return fmt.Sprintf("%v", v)
+        return v
+    }
 }
